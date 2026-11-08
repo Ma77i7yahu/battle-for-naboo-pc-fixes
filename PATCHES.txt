@@ -297,3 +297,74 @@ Every 'old' value below has been checked against the original exe.
         ; flyer target-finder cone (types 4,6,7) -> 3 deg
   off 12B76A  (VA 0052B76A)  003f -> 4040
         ; (same table, type 11)
+
+==============================================================================
+[repair] Every craft repairs itself (30 changes)
+==============================================================================
+  Repair fn 0x4898E0 runs per player each frame: if craft flags [cfg+0x120] & 0x40, health += dt * rate [cfg+0xF0]
+  up to max [cfg+0xEC]. Stock only the N-1 init sets 0x40. Each of the 14 craft init functions (0x485CA0..0x487B5C)
+  gets bit 0x40 in its flags immediate and rate = max * 0.006 (the N-1's 0.6 %/s); the N-1 keeps its own values.
+  The damage handler's R2 sounds (calls at 0x48C0C0/0x48C0CE/0x48C10A) go through a new check at 0x48C120 that only
+  plays them for the N-1 (craft type 4). The below-25% repair loss applies to every craft, as on the N-1.
+  off 085CA8  (VA 00485CA8)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020007B
+  off 085E0F  (VA 00485E0F)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 085E92  (VA 00485E92)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020007B
+  off 086035  (VA 00486035)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 0860C2  (VA 004860C2)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020217B
+  off 086269  (VA 00486269)  33331342 -> df4f0d40
+        ; mov [ecx+0xf0], ... -> rate 2.208/s
+  off 0862F2  (VA 004862F2)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020007B
+  off 086497  (VA 00486497)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 086522  (VA 00486522)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020087B
+  off 0866C8  (VA 004866C8)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 086756  (VA 00486756)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020087B
+  off 0868F8  (VA 004868F8)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 086983  (VA 00486983)  b7 -> f7
+        ; mov [ecx+0x120], ... -> flags 0x002000F7
+  off 086BB4  (VA 00486BB4)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 086F32  (VA 00486F32)  37 -> 77
+        ; mov [ecx+0x120], ... -> flags 0x00200077
+  off 0870FD  (VA 004870FD)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 0871A2  (VA 004871A2)  37 -> 77
+        ; mov [ecx+0x120], ... -> flags 0x00200077
+  off 0873CA  (VA 004873CA)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 087472  (VA 00487472)  37 -> 77
+        ; mov [ecx+0x120], ... -> flags 0x00200077
+  off 08765F  (VA 0048765F)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 087713  (VA 00487713)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020087B
+  off 0878A9  (VA 004878A9)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 087932  (VA 00487932)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020087B
+  off 087AD7  (VA 00487AD7)  4842 -> 4040
+  off 087B62  (VA 00487B62)  3b -> 7b
+        ; mov [ecx+0x120], ... -> flags 0x0020217B
+  off 087D01  (VA 00487D01)  00000042 -> 8fc2f53f
+        ; mov [ecx+0xf0], ... -> rate 1.920/s
+  off 08C0C1  (VA 0048C0C1)  4950f7ff -> 5b000000
+        0048C0C0  e85b000000             call 0x48c120
+  off 08C0CF  (VA 0048C0CF)  3b50f7ff -> 4d000000
+        0048C0CE  e84d000000             call 0x48c120
+  off 08C10B  (VA 0048C10B)  ff4ff7ff -> 11000000
+        0048C10A  e811000000             call 0x48c120
+  off 08C120  (VA 0048C120)  cccccccccccccccccccccccccccccccccccccccc -> 8b44242080b818010000040f84dd4ff7ffc20800
+        0048C120  8b442420               mov eax, dword ptr [esp + 0x20]
+        0048C124  80b81801000004         cmp byte ptr [eax + 0x118], 4
+        0048C12B  0f84dd4ff7ff           je 0x40110e
+        0048C131  c20800                 ret 8

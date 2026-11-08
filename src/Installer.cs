@@ -39,7 +39,7 @@ class InstallerForm : Form {
     const string BackupName = "bfn_original.exe";
     const string DataName = "data.bin";
     const string IniName = @"plugins\ChipResolution.ini";
-    static readonly string[] ExeKeys = { "widescreen", "aimassist", "platinum", "highfps", "mquick", "msilent", "gunsight" };   // options that patch bfn.exe, in build order
+    static readonly string[] ExeKeys = { "widescreen", "aimassist", "platinum", "highfps", "mquick", "msilent", "gunsight", "repair" };   // options that patch bfn.exe, in build order
 
     static readonly int[][] Resolutions = {
         new[]{1920,1080}, new[]{2560,1440}, new[]{3840,2160}, new[]{1600,900}, new[]{1366,768}, new[]{1280,720},
@@ -134,6 +134,13 @@ class InstallerForm : Form {
             "Includes everything the option above does for flying craft, so ticking this one unticks it.\r\n\r\n" +
             "Status: tested in the N-1 starfighter and one other flyer. Unlocked shots at terrain much nearer or further than 400 units " +
             "still land slightly low or high, because the game has no distance for terrain.");
+        Check(g2, "repair", "Every craft repairs itself",
+            "In the stock game only the N-1 starfighter slowly repairs damage (its astromech droid at work), at 0.6% " +
+            "of full health per second.\r\n\r\n" +
+            "Gives every craft you can fly the same repair at the same rate, land, water and air. Like the N-1, a " +
+            "craft that drops below a quarter of its health stops repairing for the rest of that life. The R2 " +
+            "warning sounds stay on the N-1 only, since the other craft have no droid.\r\n\r\n" +
+            "Status: played with by our tester in several craft; not checked craft by craft.");
         Check(g2, "borvo", "Higher flight ceiling on Borvo the Hutt",
             "The Borvo the Hutt mission's ceiling is far lower than every other mission's, so you hit an invisible " +
             "lid only just above the ground.\r\n\r\n" +
