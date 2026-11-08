@@ -1,0 +1,154 @@
+Star Wars Episode I: Battle for Naboo (PC) - complete patch listing
+Base exe: data_pc\bfn.exe, 1359872 bytes, MD5 64F8B9C0F356C31D64C51455A2B0CF23
+off = file offset; VA = 0x400000 + off (all changes are in .text/.rdata, which map 1:1).
+Every 'old' value below has been checked against the original exe.
+
+==============================================================================
+[widescreen] Hor+ widescreen (3D view, level culling, terrain edges, radar map)  (3 changes)
+==============================================================================
+  off 03D5AD  (VA 0043D5AD)  e4a851 -> c8545f
+        ; level sector culling: fmul [51A8E4] (its own 4/3) -> fmul [5F54C8] (the camera aspect)
+        0043D5AB  d80dc8545f00           fmul dword ptr [0x5f54c8]
+  off 072B08  (VA 00472B08)  e004 -> 0020
+        ; terrain cell buffer: alloc 0x4E0 -> 0x2000 bytes and its four sub-arrays moved apart, room for the wider view pyramid
+        00472B07  6800200000             push 0x2000
+  off 072B18  (VA 00472B18)  900100008d9020030000050004 -> 000800008d9000100000050018
+        ; (same buffer: sub-array offsets 0x190/0x320/0x400 -> 0x800/0x1000/0x1800)
+        00472B16  8d8800080000           lea ecx, [eax + 0x800]
+        00472B1C  8d9000100000           lea edx, [eax + 0x1000]
+  Aspect-dependent float immediates (written by the installer, value = stock x aspect / (4/3)):
+  off 00D272  (VA 0040D272)  stock abaaaa3f = 1.33333   16:9 398ee33f = 1.77778
+        ; camera aspect (mov [5F54C8], imm): 4/3 -> screen aspect
+  off 04C083  (VA 0044C083)  stock 000080bf = -1   16:9 abaaaabf = -1.33333
+        ; terrain/water view-pyramid corner ray x (-1.0 at 4:3)
+  off 0CBEB2  (VA 004CBEB2)  stock cf48543e = 0.207309   16:9 df858d3e = 0.276412
+        ; radar map width (push imm)
+  off 0CBEC8  (VA 004CBEC8)  stock fb3b533f = 0.825134   16:9 a7d28c3f = 1.10018
+        ; radar map x position (push imm)
+  off 0CBED9  (VA 004CBED9)  stock 2977df3d = 0.109114   16:9 1bfa143e = 0.145485
+        ; radar map width, second layout (push imm)
+  off 0CBEEF  (VA 004CBEEF)  stock 05dce33e = 0.445038   16:9 03e8173f = 0.593384
+        ; radar map x position, second layout (push imm)
+
+==============================================================================
+[aimassist] Remove laser aim assist (every craft)  (4 changes)
+==============================================================================
+  off 09BF80  (VA 0049BF80)  75 -> eb
+        ; "target below you" cone widening skipped (jne -> jmp)
+        0049BF80  eb25                   jmp 0x49bfa7
+        0049BF82  d9442434               fld dword ptr [esp + 0x34]
+  off 09BFB4  (VA 0049BFB4)  0f84a4000000 -> e9a500000090
+        ; aim-assist cone test always rejects (je -> jmp 0049C05E)
+        0049BFB4  e9a5000000             jmp 0x49c05e
+        0049BFB9  90                     nop
+  off 12B74C  (VA 0052B74C)  9a99993f0000c03f9a99993f0000803f -> 000000000000c03f0000000000000000
+        ; per-craft aim-assist cone table 0052B73C.. : flyer entries -> 0 (no longer reached after 0049BFB4)
+  off 12B766  (VA 0052B766)  20400000003f -> 000000000000
+        ; (same table)
+
+==============================================================================
+[platinum] Results screen shows the platinum requirements once you have gold  (5 changes)
+==============================================================================
+  off 0952E0  (VA 004952E0)  cccccccccccccccccccccccccccccccccccccccccccccccc...(38 bytes) -> 8a928830540080fa0480d200c3cccccc83f903730b81c151...(38 bytes)
+        ; code cave in int3 padding: tier = min(best medal + 1, 4); gold/platinum heading -> own string
+        004952E0  8a9288305400           mov dl, byte ptr [edx + 0x543088]
+        004952E6  80fa04                 cmp dl, 4
+        004952E9  80d200                 adc dl, 0
+        004952EC  c3                     ret
+        004952ED  cc                     int3
+        004952EE  cc                     int3
+        004952EF  cc                     int3
+        004952F0  83f903                 cmp ecx, 3
+        004952F3  730b                   jae 0x495300
+        004952F5  81c151010000           add ecx, 0x151
+        004952FB  e93fd3f6ff             jmp 0x40263f
+        00495300  b810534900             mov eax, 0x495310
+        00495305  c3                     ret
+        00495306  cc                     int3
+        00495307  cc                     int3
+        00495308  cc                     int3
+        00495309  cc                     int3
+        0049530A  cc                     int3
+        0049530B  cc                     int3
+        0049530C  cc                     int3
+        0049530D  cc                     int3
+        0049530E  cc                     int3
+        0049530F  cc                     int3
+  off 095310  (VA 00495310)  cccccccccccccccccccccccccccccccccccccccc -> 4e454544454420464f520a504c4154494e554d00
+        ; string "NEEDED FOR\nPLATINUM"
+  off 0B39AE  (VA 004B39AE)  72 -> eb
+        ; results screen: always use the next-medal layout (jb -> jmp)
+        004B39AE  eb4c                   jmp 0x4b39fc
+  off 0B3A19  (VA 004B3A19)  8a9288305400fec2 -> e8c218feff909090
+        ; requirement tier -> call cave 004952E0
+        004B3A19  e8c218feff             call 0x4952e0
+        004B3A1E  90                     nop
+        004B3A1F  90                     nop
+        004B3A20  90                     nop
+  off 0B3AB5  (VA 004B3AB5)  81c151010000e87febf4ff -> e83618feff909090909090
+        ; heading text id -> call cave 004952F0
+        004B3AB5  e83618feff             call 0x4952f0
+        004B3ABA  90                     nop
+        004B3ABB  90                     nop
+        004B3ABC  90                     nop
+        004B3ABD  90                     nop
+        004B3ABE  90                     nop
+        004B3ABF  90                     nop
+
+==============================================================================
+[highfps] Vehicles pull away from a standstill above 60 fps  (3 changes)
+==============================================================================
+  off 093260  (VA 00493260)  cccccccccccccccccccccccccccccccccccccccccccccccc...(34 bytes) -> d9842490000000d81da0324900dfe0f6c4017507d81db4b2...(34 bytes)
+        ; code cave in int3 padding: frame time < 0.0163 s (above ~61 fps) -> skip the standstill cut-off, else stock test
+        00493260  d9842490000000         fld dword ptr [esp + 0x90]
+        00493267  d81da0324900           fcomp dword ptr [0x4932a0]
+        0049326D  dfe0                   fnstsw ax
+        0049326F  f6c401                 test ah, 1
+        00493272  7507                   jne 0x49327b
+        00493274  d81db4b25100           fcomp dword ptr [0x51b2b4]
+        0049327A  c3                     ret
+        0049327B  d81d44a75100           fcomp dword ptr [0x51a744]
+        00493281  c3                     ret
+  off 0932A0  (VA 004932A0)  cccccccc -> 9487853c
+        ; float 0.0163 (frame-time limit used by the cave)
+  off 097C4A  (VA 00497C4A)  d81db4b25100 -> e811b6ffff90
+        ; vehicle movement: |velocity x frame time|^2 < 1e-6 zeroes the velocity; thrust from rest is smaller than that above 60 fps -> call cave 00493260
+        00497C4A  e811b6ffff             call 0x493260
+        00497C4F  90                     nop
+
+==============================================================================
+[mquick] Mission Select moves one mission per key press, even mid-slide  (2 changes)
+==============================================================================
+  off 006340  (VA 00406340)  cccccccccccccccccccccccc -> 51e82a800b0059e9047d0b00
+        ; code cave in int3 padding: run the slide, then the Left/Right/select handler 004BE050 (input is newly-pressed only, so one step per press)
+        00406340  51                     push ecx
+        00406341  e82a800b00             call 0x4be370
+        00406346  59                     pop ecx
+        00406347  e9047d0b00             jmp 0x4be050
+  off 0BDE9F  (VA 004BDE9F)  cd040000 -> 9d84f4ff
+
+==============================================================================
+[msilent] Mission Select steps make no sound  (2 changes)
+==============================================================================
+  off 0BE17C  (VA 004BE17C)  e8a337f4ff -> 9090909090
+        ; Left step: page-turn sound call 00401924 (sound 0x5C) -> nop
+        004BE17C  90                     nop
+        004BE17D  90                     nop
+        004BE17E  90                     nop
+        004BE17F  90                     nop
+        004BE180  90                     nop
+  off 0BE214  (VA 004BE214)  e80b37f4ff -> 9090909090
+        ; Right step: page-turn sound call 00401924 (sound 0x5C) -> nop
+        004BE214  90                     nop
+        004BE215  90                     nop
+        004BE216  90                     nop
+        004BE217  90                     nop
+        004BE218  90                     nop
+
+==============================================================================
+[borvo] Borvo the Hutt flight ceiling  (data_pc\data.bin, not the exe)
+==============================================================================
+  off 1081D40  float -70 -> -200  (min Y of the mission's player_StartPosition record; Y points down)
+        ; the installer checks the record (maxY 99999.0 at +4, name "player_StartPosition" at +0x10) before writing.
+        ; untouched data.bin MD5 B91EF5DB2EFB0B575234C1013C5BB130
+
