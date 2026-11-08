@@ -1,12 +1,12 @@
 # Star Wars Episode I: Battle for Naboo (PC) – Mod Installer
 
-Optional fixes and improvements for the PC version of **Star Wars Episode I: Battle for Naboo**: Hor+ widescreen at any aspect ratio, aim assist removal, a fix for vehicles stuck at a standstill above 60 fps, a higher ceiling on Borvo the Hutt, platinum requirements on the results screen, and faster Mission Select. Each option can be turned on or off on its own, and the installer keeps your original exe so you can change or undo anything later.
+Optional fixes and improvements for the PC version of **Star Wars Episode I: Battle for Naboo**: Hor+ widescreen at any aspect ratio, aim assist removal for flying craft, an orange single-ring crosshair with lasers aimed through it, a fix for vehicles stuck at a standstill above 60 fps, a higher ceiling on Borvo the Hutt, platinum requirements on the results screen, and faster Mission Select. Each option can be turned on or off on its own, and the installer keeps your original exe so you can change or undo anything later.
 
 **This is a patch only.** No game files are included. You need your own copy of the game.
 
 ## Download
 
-Get `BattleForNabooMods-v1.0.zip` from the [**Releases**](https://github.com/Ma77i7yahu/battle-for-naboo-pc-fixes/releases/latest) page. It holds the installer, its README and `PATCHES.txt`. `SHA256SUMS.txt` on the release page lets you check your download.
+Get `BattleForNabooMods-v1.1.zip` from the [**Releases**](https://github.com/Ma77i7yahu/battle-for-naboo-pc-fixes/releases/latest) page. It holds the installer, its README and `PATCHES.txt`. `SHA256SUMS.txt` on the release page lets you check your download.
 
 Full instructions, requirements and troubleshooting: [docs/README-installer.md](docs/README-installer.md).
 
@@ -15,7 +15,8 @@ Full instructions, requirements and troubleshooting: [docs/README-installer.md](
 | Option | Status |
 |---|---|
 | Hor+ widescreen (any aspect ratio) | Tested at 1920x1080 (16:9); 16:10, 21:9 and 32:9 built the same way but not yet played |
-| Remove laser aim assist | Tested |
+| Remove laser aim assist from flying craft | Tested |
+| Crosshair and laser aim for flying craft (replaces the option above) | Tested in two flying craft |
 | Higher flight ceiling on Borvo the Hutt | Tested |
 | Fix vehicles stuck at a standstill above 60 fps | Tested at 119 fps |
 | Show the platinum requirements once you have gold | Tested |

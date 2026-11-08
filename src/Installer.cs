@@ -39,7 +39,7 @@ class InstallerForm : Form {
     const string BackupName = "bfn_original.exe";
     const string DataName = "data.bin";
     const string IniName = @"plugins\ChipResolution.ini";
-    static readonly string[] ExeKeys = { "widescreen", "aimassist", "platinum", "highfps", "mquick", "msilent" };   // options that patch bfn.exe, in build order
+    static readonly string[] ExeKeys = { "widescreen", "aimassist", "platinum", "highfps", "mquick", "msilent", "gunsight" };   // options that patch bfn.exe, in build order
 
     static readonly int[][] Resolutions = {
         new[]{1920,1080}, new[]{2560,1440}, new[]{3840,2160}, new[]{1600,900}, new[]{1366,768}, new[]{1280,720},
@@ -113,11 +113,27 @@ class InstallerForm : Form {
         Panel(g1).Controls.Add(wsRow);
 
         var g2 = Group(root, "Gameplay");
-        Check(g2, "aimassist", "Remove laser aim assist",
-            "Every craft bends its lasers toward any enemy inside a cone around the nose (flyers get an extra-wide " +
-            "cone for targets below you).\r\n\r\n" +
-            "Switches the cone test off, so shots go where the crosshair points. Missile and torpedo lock-on are " +
+        Check(g2, "aimassist", "Remove laser aim assist from flying craft",
+            "Every craft bends its lasers toward any enemy inside a small cone around the nose.\r\n\r\n" +
+            "Sets that cone to zero for the flying craft (N-1 starfighter, police cruiser, bomber and the other " +
+            "flyers), so their shots go where the crosshair points. Ground and water craft keep their stock aim " +
+            "assist, which helps make up for them bobbing on the terrain. Missile and torpedo lock-on are " +
             "unchanged.\r\n\r\nStatus: tested.");
+        Check(g2, "gunsight", "Crosshair and laser aim for flying craft (replaces the option above)",
+            "The flying craft's crosshair is two blue rings: a big one close to the craft that the lasers never go " +
+            "through, and a small one further out. From the chase camera, shots land above the rings at a distance " +
+            "and below them up close, and drift up and down as you speed up or slow down.\r\n\r\n" +
+            "- The big ring is removed; the crosshair is the small ring only, now in solid orange.\r\n" +
+            "- Lasers from the flying craft (N-1 starfighter, police cruiser, bomber and the other flyers) are aimed " +
+            "along the camera's line through the centre of the crosshair. When there's a target near the crosshair " +
+            "they meet that line at the target's distance, so what's in the crosshair gets hit; with nothing targeted " +
+            "they meet it 400 units out, allowing for your own speed.\r\n" +
+            "- This is not aim assist: shots never bend towards a target, the target only gives the distance. The " +
+            "game's target finder for flyers is widened (3 degrees, 900 units) just for that.\r\n\r\n" +
+            "Ground and water craft keep their stock aim and aim assist. Missile and torpedo lock-on are unchanged.\r\n\r\n" +
+            "Includes everything the option above does for flying craft, so ticking this one unticks it.\r\n\r\n" +
+            "Status: tested in the N-1 starfighter and one other flyer. Unlocked shots at terrain much nearer or further than 400 units " +
+            "still land slightly low or high, because the game has no distance for terrain.");
         Check(g2, "borvo", "Higher flight ceiling on Borvo the Hutt",
             "The Borvo the Hutt mission's ceiling is far lower than every other mission's, so you hit an invisible " +
             "lid only just above the ground.\r\n\r\n" +
@@ -162,6 +178,7 @@ class InstallerForm : Form {
         root.Controls.Add(bl);
 
         Opt("widescreen").Box.CheckedChanged += (s, e) => UpdateEnabled();
+        Opt("gunsight").Box.CheckedChanged += (s, e) => UpdateEnabled();
 
         string here = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
         if (FindDataDir(here) != null) folder.Text = here;
@@ -189,6 +206,9 @@ class InstallerForm : Form {
         bool ok = baseExe != null;
         res.Enabled = ok && On("widescreen");
         Opt("borvo").Box.Enabled = ok && borvo >= 0;
+        // the gunsight option rewrites the same flyer cone table as the aim-assist option
+        if (On("gunsight")) Set("aimassist", false);
+        Opt("aimassist").Box.Enabled = ok && !On("gunsight");
     }
 
     static string Md5(byte[] b) {
@@ -336,6 +356,7 @@ class InstallerForm : Form {
         var img = (byte[])baseExe.Clone();
         foreach (var k in ExeKeys) {
             if (!On(k)) continue;
+            if (k == "aimassist" && On("gunsight")) continue;   // superseded (same cone table)
             foreach (var r in PatchFor(k).Runs) {
                 for (int i = 0; i < r.Old.Length; i++)
                     if (img[r.Offset + i] != r.Old[i]) throw new InvalidOperationException("Unexpected bytes at 0x" + r.Offset.ToString("X") + " for " + k);

@@ -71,7 +71,9 @@ def split_ws(exe):
 widescreen = split_ws(ws169)
 assert all(ws169[o:o + 4] == ws_float(o, 16, 9) for o in WS_FLOATS)
 
-aimassist = runs(ws169, aim169)
+# 2026-11-08: flyers only - keep just the cone table runs. The tested ref exes were v3 (every craft)
+# and have since been deleted, so the build()/ref asserts below no longer apply as written.
+aimassist = [r for r in runs(ws169, aim169) if r[0] >= 0x12B000]
 platinum = runs(aim169, full["16x9"])
 highfps = runs(full["16x9"], fps["16x9"])
 mquick = runs(fps["16x9"], quick["16x9"])
@@ -88,7 +90,7 @@ def build(w, h, keys):
     return bytes(img)
 GROUPS = [
     ("widescreen", "Hor+ widescreen (3D view, level culling, terrain edges, radar map)", widescreen),
-    ("aimassist", "Remove laser aim assist (every craft)", aimassist),
+    ("aimassist", "Remove laser aim assist from flying craft", aimassist),
     ("platinum", "Results screen shows the platinum requirements once you have gold", platinum),
     ("highfps", "Vehicles pull away from a standstill above 60 fps", highfps),
     ("mquick", "Mission Select moves one mission per key press, even mid-slide", mquick),
@@ -148,7 +150,7 @@ NOTES = {
     0x072B18: "(same buffer: sub-array offsets 0x190/0x320/0x400 -> 0x800/0x1000/0x1800)",
     0x09BF80: "\"target below you\" cone widening skipped (jne -> jmp)",
     0x09BFB4: "aim-assist cone test always rejects (je -> jmp 0049C05E)",
-    0x12B74C: "per-craft aim-assist cone table 0052B73C.. : flyer entries -> 0 (no longer reached after 0049BFB4)",
+    0x12B74C: "per-craft aim-assist cone table 0052B73C.. : flyer entries (types 4,6,7,10,11) -> 0; ground/water craft keep stock cones",
     0x12B766: "(same table)",
     0x0952E0: "code cave in int3 padding: tier = min(best medal + 1, 4); gold/platinum heading -> own string",
     0x095310: "string \"NEEDED FOR\\nPLATINUM\"",

@@ -31,18 +31,10 @@ Every 'old' value below has been checked against the original exe.
         ; radar map x position, second layout (push imm)
 
 ==============================================================================
-[aimassist] Remove laser aim assist (every craft)  (4 changes)
+[aimassist] Remove laser aim assist from flying craft  (2 changes)
 ==============================================================================
-  off 09BF80  (VA 0049BF80)  75 -> eb
-        ; "target below you" cone widening skipped (jne -> jmp)
-        0049BF80  eb25                   jmp 0x49bfa7
-        0049BF82  d9442434               fld dword ptr [esp + 0x34]
-  off 09BFB4  (VA 0049BFB4)  0f84a4000000 -> e9a500000090
-        ; aim-assist cone test always rejects (je -> jmp 0049C05E)
-        0049BFB4  e9a5000000             jmp 0x49c05e
-        0049BFB9  90                     nop
   off 12B74C  (VA 0052B74C)  9a99993f0000c03f9a99993f0000803f -> 000000000000c03f0000000000000000
-        ; per-craft aim-assist cone table 0052B73C.. : flyer entries -> 0 (no longer reached after 0049BFB4)
+        ; per-craft aim-assist cone table 0052B73C.. : flyer entries (types 4,6,7,10,11) -> 0; ground/water craft keep stock cones
   off 12B766  (VA 0052B766)  20400000003f -> 000000000000
         ; (same table)
 
@@ -152,3 +144,156 @@ Every 'old' value below has been checked against the original exe.
         ; the installer checks the record (maxY 99999.0 at +4, name "player_StartPosition" at +0x10) before writing.
         ; untouched data.bin MD5 B91EF5DB2EFB0B575234C1013C5BB130
 
+
+==============================================================================
+[gunsight] Crosshair and laser aim for flying craft (replaces [aimassist]: same cone table)
+==============================================================================
+  off 003000  (VA 00403000)  1856 bytes ->
+        ; new code + data in unused int3 padding; source: src\gunsight.s (built and applied by src\gunsight.py)
+        d9442430d823d84c2414d803d95c2430d9442434d86304d84c2414d84304d95c
+        2434d9442438d86308d84c2414d84308d95c2438d9442414d84b0cc38d742600
+        8b871801000083f80b0f8789030000b9d00c00000fa3c10f837b03000031d281
+        befc020000ffff0000740342eb00538b1dd838540085db0f842202000083c324
+        83ec20d9048510374000d9c0d84e0cd806d91c24d9c0d84e10d84604d95c2404
+        d84e14d84608d95c2408d90424d80bd9442404d84b04d8c1ddd9d9442408d84b
+        08d8c1ddd9d84324d95c240cd90424d84b0cd9442404d84b10d8c1ddd9d94424
+        08d84b14d8c1ddd9d84328d95c2410d90424d84b18d9442404d84b1cd8c1ddd9
+        d9442408d84b20d8c1ddd9d8432cd95c241485d27422d9442444d84b18d94424
+        48d84b1cd8c1ddd9d944244cd84b20d8c1ddd9d8432ceb11d9442414d80d0837
+        4000d8348510374000d9442414d8151ca75100dfe0f6c4410f853a010000d9c9
+        d8151ca75100dfe0f6c4410f8527010000d8f1ddd9d944240cd8c9d86324d903
+        d8c8d94304d8c8d8c1ddd9d94308d8c8d8c1ddd9d8f9ddd9d91c24d9442410d8
+        c9d86328d9430cd8c8d94310d8c8d8c1ddd9d94314d8c8d8c1ddd9d8f9ddd9d9
+        5c2404d9442414d8c9d8632cd94318d8c8d9431cd8c8d8c1ddd9d94320d8c8d8
+        c1ddd9d8f9ddd9d95c2408ddd8d90424d80bd9442404d84b0cd8c1ddd9d94424
+        08d84b18d8c1ddd9d95c2444d90424d84b04d9442404d84b10d8c1ddd9d94424
+        08d84b1cd8c1ddd9d95c2448d90424d84b08d9442404d84b14d8c1ddd9d94424
+        08d84b20d8c1ddd9d95c244c85d27542d90508374000d874242c803d342d5400
+        147506d83580a85100d94624d8c9d8442444d95c2444d94628d8c9d8442448d9
+        5c2448d9462cd8c9d844244cd95c244cddd883c4205beb72ddd8ddd883c4205b
+        85d2750f8b8718010000d9048510374000eb6ed9442420d826d84e0cd9442424
+        d86604d84e10dec1d9442428d86608d84e14dec1d81504374000dfe0f6c40174
+        08ddd8d90504374000d9c0d84e0cd806d95c2420d9c0d84e10d84604d95c2424
+        d84e14d84608d95c24288d542420680000803f8d4c2430e85be3ffffe9d60000
+        00d9442408803d342d5400147506d80d80a85100d8c8d94624d8c8d94628d8c8
+        d8c1ddd9d9462cd8c8d8c1ddd9d8e9ddd9d8151ca75100dfe0f6c4417573d946
+        24d84e0cd94628d84e10d8c1ddd9d9462cd84e14d8c1ddd9d9c0d8c8d8c2d9fa
+        d8c1d8cbd8f2ddd9ddd9d9460cd8cad94624d8cad8c1d806d95c2420ddd8d946
+        10d8cad94628d8cad8c1d84604d95c2424ddd8d94614d8cad9462cd8cad8c1d8
+        4608d95c2428ddd8ddd8ddd8e939ffffffddd8e911ffffff8b86fc0200003dff
+        ff000074128b4c24108d542420518d4c2430e880e2ffffe99ccd080000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000000000
+        00000000000020410000c843000000000000c0420000c0420000c0420000c042
+        000010430000c042000010439a9919430000c0420000c0420000c04200001043
+  off 090179  (VA 00490179)  31 bytes ->
+        ; primary fire aim step: jmp aim_cave (flyers: bolt turned fully onto the camera ray through the crosshair; other craft: stock code)
+        00490174  0889442428e9           or byte ptr [ecx - 0x16d7dbbc], cl
+        0049017A  c22ef7                 ret 0xf72e
+        0049017D  ff9090909090           call dword ptr [eax - 0x6f6f6f70]
+        00490183  90                     nop 
+        00490184  90                     nop 
+        00490185  90                     nop 
+        00490186  90                     nop 
+        00490187  90                     nop 
+        00490188  90                     nop 
+        00490189  90                     nop 
+        0049018A  90                     nop 
+        0049018B  90                     nop 
+        0049018C  90                     nop 
+        0049018D  90                     nop 
+        0049018E  90                     nop 
+        0049018F  90                     nop 
+        00490190  90                     nop 
+        00490191  90                     nop 
+        00490192  90                     nop 
+        00490193  90                     nop 
+        00490194  90                     nop 
+        00490195  90                     nop 
+        00490196  90                     nop 
+        00490197  90                     nop 
+  off 0E2D94  (VA 004E2D94)  d9442410d84b0c -> e86702f2ff9090
+        ; gunsight HUD (normal): call hud_cave - near ring moved to 1/3 of the far ring's distance (kept for its fade, not drawn)
+        004E2D94  e86702f2ff             call 0x403000
+        004E2D99  90                     nop 
+        004E2D9A  90                     nop 
+  off 0E2EFC  (VA 004E2EFC)  8b0e8d47288b510889108b0e894108 -> eb0d90909090909090909090909090
+        ; big ring sprite: skip its draw-list insert (normal view)
+        004E2EFB  00eb                   add bl, ch
+        004E2EFD  0d90909090             or eax, 0x90909090
+        004E2F02  90                     nop 
+        004E2F03  90                     nop 
+        004E2F04  90                     nop 
+        004E2F05  90                     nop 
+        004E2F06  90                     nop 
+        004E2F07  90                     nop 
+        004E2F08  90                     nop 
+        004E2F09  90                     nop 
+        004E2F0A  90                     nop 
+  off 0E302C  (VA 004E302C)  d9442410d84b0c -> e8cffff1ff9090
+        ; gunsight HUD (torpedo view): same
+        004E302C  e8cffff1ff             call 0x403000
+        004E3031  90                     nop 
+        004E3032  90                     nop 
+  off 0E3169  (VA 004E3169)  8b0e8d87080200008b510889108b0e894108 -> eb1090909090909090909090909090909090
+        ; big ring sprite: skip its draw-list insert (torpedo view)
+        004E3169  eb10                   jmp 0x4e317b
+        004E316B  90                     nop 
+        004E316C  90                     nop 
+        004E316D  90                     nop 
+        004E316E  90                     nop 
+        004E316F  90                     nop 
+        004E3170  90                     nop 
+        004E3171  90                     nop 
+        004E3172  90                     nop 
+        004E3173  90                     nop 
+        004E3174  90                     nop 
+        004E3175  90                     nop 
+        004E3176  90                     nop 
+        004E3177  90                     nop 
+        004E3178  90                     nop 
+        004E3179  90                     nop 
+        004E317A  90                     nop 
+  off 0E386B  (VA 004E386B)  5689542408c6460191db442408c64602fb -> ff89542408c6460180db442408c6460200
+        ; crosshair colour R,G,B 56 91 FB (blue) -> FF 80 00 (orange), path 1
+        004E3869  c606ff                 mov byte ptr [esi], 0xff
+        004E386C  89542408               mov dword ptr [esp + 8], edx
+        004E3870  c6460180               mov byte ptr [esi + 1], 0x80
+        004E3874  db442408               fild dword ptr [esp + 8]
+        004E3878  c6460200               mov byte ptr [esi + 2], 0
+  off 0E389E  (VA 004E389E)  5684c0c6460191c64602fb -> ff84c0c6460180c6460200
+        ; same, path 2
+        004E389C  c606ff                 mov byte ptr [esi], 0xff
+        004E389F  84c0                   test al, al
+        004E38A1  c6460180               mov byte ptr [esi + 1], 0x80
+        004E38A5  c6460200               mov byte ptr [esi + 2], 0
+  off 12B6EE  (VA 0052B6EE)  c843008089430000af4300009643 -> 6144008089430000614400006144
+        ; flyer target-finder range (types 4,6,7,11) -> 900 (only supplies the aim depth)
+  off 12B70A  (VA 0052B70A)  9643 -> 6144
+        ; (same table, type 11)
+  off 12B74C  (VA 0052B74C)  9a99993f0000c03f9a99993f0000803f -> 000040400000c03f0000404000004040
+        ; flyer target-finder cone (types 4,6,7) -> 3 deg
+  off 12B76A  (VA 0052B76A)  003f -> 4040
+        ; (same table, type 11)
